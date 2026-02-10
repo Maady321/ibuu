@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const profileForm = document.querySelector(".profile-form");
 
   try {
-    const response = await fetch("http://localhost:8000/api/auth/profile", {
+    const response = await fetch("/api/auth/profile", {
       headers: {
         "User-ID": userId,
       },
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       address: addressInput.value,
     };
     try {
-      const response = await fetch("http://localhost:8000/api/auth/profile", {
+      const response = await fetch("/api/auth/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

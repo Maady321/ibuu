@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!container) return;
   try {
     const response = await fetch(
-      "http://localhost:8000/api/bookings/provider/confirmed",
+      "/api/bookings/provider/confirmed",
       {
         headers: {
           "Provider-ID": localStorage.getItem("provider_id"),
@@ -71,7 +71,7 @@ async function completeBooking(bookingId) {
   if (!confirm("Mark this service as completed?")) return;
   try {
     const response = await fetch(
-      `http://localhost:8000/api/bookings/provider/${bookingId}/complete`,
+      `/api/bookings/provider/${bookingId}/complete`,
       {
         method: "PUT",
         headers: {

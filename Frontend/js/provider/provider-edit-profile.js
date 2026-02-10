@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateNavBar();
   try {
     const response = await fetch(
-      `http://localhost:8000/api/providers/${providerId}`,
+      `/api/providers/${providerId}`,
       {
         headers: {
           "Provider-ID": providerId,
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
       try {
         const response = await fetch(
-          `http://localhost:8000/api/providers/update/${providerId}`,
+          `/api/providers/update/${providerId}`,
           {
             method: "PUT",
             headers: {

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const response = await fetch("http://localhost:8000/api/bookings/my", {
+    const response = await fetch("/api/bookings/my", {
       headers: {
         "User-ID": localStorage.getItem("user_id"),
       },
@@ -106,7 +106,7 @@ async function cancelBooking(bookingId) {
   if (!confirm("Are you sure you want to cancel this booking?")) return;
   try {
     const response = await fetch(
-      `http://localhost:8000/api/bookings/${bookingId}`,
+      `/api/bookings/${bookingId}`,
       {
         method: "DELETE",
         headers: {

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!container) return;
   try {
     const response = await fetch(
-      "http://localhost:8000/api/bookings/provider/completed",
+      "/api/bookings/provider/completed",
       {
         headers: {
           "Provider-ID": localStorage.getItem("provider_id"),

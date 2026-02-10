@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("service_id").value = serviceId;
   try {
     const response = await fetch(
-      `http://localhost:8000/api/services/${serviceId}`,
+      `/api/services/${serviceId}`,
     );
     if (response.ok) {
       const service = await response.json();
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         instructions: document.getElementById("notes").value,
       };
       try {
-        const response = await fetch("http://localhost:8000/api/bookings", {
+        const response = await fetch("/api/bookings", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     welcomeName.textContent = savedName;
   }
   try {
-    const response = await fetch("http://localhost:8000/api/auth/profile", {
+    const response = await fetch("/api/auth/profile", {
       headers: {
         "User-ID": userId,
       },
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!activityContainer) return;
   try {
     const bookingsResponse = await fetch(
-      "http://localhost:8000/api/bookings/my",
+      "/api/bookings/my",
       {
         headers: {
           "User-ID": userId,

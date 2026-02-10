@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = localStorage.getItem("user_id");
   try {
     const response = await fetch(
-      "http://localhost:8000/api/reviews/my/profile",
+      "/api/reviews/my/profile",
       {
         headers: {
           "User-ID": userId,
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const response = await fetch(
-      "http://localhost:8000/api/reviews/my/reviews",
+      "/api/reviews/my/reviews",
       {
         headers: {
           "User-ID": userId,

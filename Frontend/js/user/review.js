@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fetchBookingDetails = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/bookings/${bookingId}`,
+        `/api/bookings/${bookingId}`,
         {
           headers: {
             "User-ID": localStorage.getItem("user_id"),
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const bookingResponse = await fetch(
-        `http://localhost:8000/api/bookings/${bookingId}`,
+        `/api/bookings/${bookingId}`,
         {
           headers: {
             "User-ID": localStorage.getItem("user_id"),
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reviewData.service_id = booking.service_id;
       }
 
-      const response = await fetch("http://localhost:8000/api/reviews", {
+      const response = await fetch("/api/reviews", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

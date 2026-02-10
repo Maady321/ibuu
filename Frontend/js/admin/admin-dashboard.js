@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Fetch Users Count
-        const userRes = await fetch('http://localhost:8000/api/auth/users');
+        const userRes = await fetch('/api/auth/users');
         const users = await userRes.json();
         document.getElementById('users-count').textContent = users.length || 0;
 

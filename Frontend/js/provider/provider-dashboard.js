@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("bookings-container");
   try {
     const response = await fetch(
-      "http://localhost:8000/api/bookings/provider/pending",
+      "/api/bookings/provider/pending",
       {
         headers: {
           "Provider-ID": localStorage.getItem("provider_id"),
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function updateStatistics() {
   try {
     const response = await fetch(
-      "http://localhost:8000/api/bookings/provider/statistics",
+      "/api/bookings/provider/statistics",
       {
         headers: {
           "Provider-ID": localStorage.getItem("provider_id"),
@@ -119,7 +119,7 @@ async function acceptBooking(bookingId) {
 
   try {
     const response = await fetch(
-      `http://localhost:8000/api/bookings/provider/${bookingId}/confirm`,
+      `/api/bookings/provider/${bookingId}/confirm`,
       {
         method: "PUT",
         headers: {

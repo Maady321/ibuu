@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("signup-form");
 
   try {
-    const response = await fetch("http://localhost:8000/api/services");
+    const response = await fetch("/api/services");
     if (response.ok) {
       const services = await response.json();
       serviceSelect.innerHTML = '<option value="">Select Service</option>';
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     try {
       const response = await fetch(
-        "http://localhost:8000/api/providers/create",
+        "/api/providers/create",
         {
           method: "POST",
           headers: {
