@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reviewData.service_id = booking.service_id;
       }
 
-      const response = await fetch("/api/reviews", {
+      const response = await fetch(`${API_BASE_URL}/api/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

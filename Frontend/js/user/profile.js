@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const profileForm = document.querySelector(".profile-form");
 
   try {
-    const response = await fetch("/api/auth/profile", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       address: addressInput.value,
     };
     try {
-      const response = await fetch("/api/auth/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

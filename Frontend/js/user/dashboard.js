@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     welcomeName.textContent = savedName;
   }
   try {
-    const response = await fetch("/api/auth/profile", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
       },

@@ -19,17 +19,16 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 
       // Store session data based on role
       localStorage.setItem("role", result.role);
-      if (result.access_token) {
-        localStorage.setItem("access_token", result.access_token);
-      }
 
       if (result.role === "user") {
         localStorage.setItem("user_id", result.user_id);
         localStorage.setItem("user_name", result.name);
+        localStorage.setItem("user_email", result.email);
       } else if (result.role === "provider") {
         localStorage.setItem("provider_id", result.provider_id);
         localStorage.setItem("user_id", result.user_id);
         localStorage.setItem("provider_name", result.name);
+        localStorage.setItem("provider_email", result.email);
       } else if (result.role === "admin") {
         localStorage.setItem("admin_logged_in", "true");
       }

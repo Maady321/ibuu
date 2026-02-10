@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         instructions: document.getElementById("notes").value,
       };
       try {
-        const response = await fetch("/api/bookings", {
+        const response = await fetch(`${API_BASE_URL}/api/bookings`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
