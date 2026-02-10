@@ -19,6 +19,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     console.log(`Loaded ${bookings.length} bookings`);
 
+    window.bookingProviders = {}; // Store provider data here
+
     bookings.forEach((booking, index) => {
       let status = (booking.status || "pending").toLowerCase();
       if (status === "accepted") status = "confirmed";
@@ -29,17 +31,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
         return;
       }
+
+      // Store provider data if available
+      if (booking.provider) {
+        window.bookingProviders[booking.id] = booking.provider;
+      }
+
       const card = document.createElement("div");
       card.className = `booking-card ${status}`;
       let actions = "";
-      const providerData = booking.provider
-        ? JSON.stringify(booking.provider).replace(/'/g, "&#39;")
-        : "null";
+
       if (status === "pending") {
         actions = `<button class="btn-cancel" onclick="cancelBooking(${booking.id})">Cancel</button>`;
       } else if (status === "confirmed") {
         actions = `
-                    <button class="btn-contact" onclick='window.showContact(${providerData})'>Contact</button>
+                    <button class="btn-contact" onclick="window.showContact(${booking.id})">Contact</button>
                     <button class="btn-cancel" onclick="cancelBooking(${booking.id})">Cancel</button>
                 `;
       } else if (status === "completed") {
@@ -85,9 +91,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
-window.showContact = function (provider) {
+
+window.showContact = function (bookingId) {
+  const provider = window.bookingProviders[bookingId];
   if (!provider) {
-    alert("Provider information not available yet.");
+    alert("Provider information not available.");
     return;
   }
   alert(
