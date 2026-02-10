@@ -1,6 +1,18 @@
-
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/Backend/main.py" }
+  "builds": [
+    {
+      "src": "Backend/api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "Backend/api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
