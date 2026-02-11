@@ -96,7 +96,7 @@ def unified_login(user: UserLogin, db: Session = Depends(get_db)):
         return {
             "message": "Login successful",
             "role": "admin",
-            "redirect": "/Frontend/html/admin/admin-dashboard.html"
+            "redirect": "Frontend/html/admin/admin-dashboard.html"
         }
 
     # 2. Check for User
@@ -108,7 +108,7 @@ def unified_login(user: UserLogin, db: Session = Depends(get_db)):
             "user_id": db_user.id,
             "name": db_user.name,
             "email": db_user.email,
-            "redirect": "/Frontend/html/user/dashboard.html"
+            "redirect": "Frontend/html/user/dashboard.html"
         }
 
     # 3. Check for Provider
@@ -121,7 +121,7 @@ def unified_login(user: UserLogin, db: Session = Depends(get_db)):
             "user_id": db_provider.user_id,
             "name": db_provider.full_name,
             "email": db_provider.email,
-            "redirect": "/Frontend/html/provider/provider-dashboard.html"
+            "redirect": "Frontend/html/provider/provider-dashboard.html"
         }
 
     raise HTTPException(status_code=401, detail="Invalid email or password")

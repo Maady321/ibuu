@@ -7,17 +7,37 @@ import models
 from fastapi import Request
 import time
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(redirect_slashes=False)
+# Environment detection
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+APP_URL = os.getenv("APP_URL", "http://localhost:3000")
+
+# Configure CORS based on environment
+if ENVIRONMENT == "production":
+    allowed_origins = [
+        "https://homebuddy.vercel.app",
+        "https://www.homebuddy.vercel.app",
+        os.getenv("FRONTEND_URL", "").split(",") if os.getenv("FRONTEND_URL") else []
+    ]
+    allowed_origins = [url.strip() for url_group in allowed_origins for url in (url_group.split(",") if isinstance(url_group, str) else [url_group])]
+    allowed_origins = [url for url in allowed_origins if url]
+else:
+    allowed_origins = ["http://localhost:3000", "http://localhost:8000", "http://127.0.0.1:3000", "http://127.0.0.1:8000"]
+
+app = FastAPI(redirect_slashes=False, title="HomeBuddy API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=False,
+    allow_origins=allowed_origins, 
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

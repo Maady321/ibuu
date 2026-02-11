@@ -1,21 +1,38 @@
+"""
+Main entry point for Vercel deployment
+Routes all API requests to the FastAPI backend
+"""
 import sys
 import os
 
-# Root directory
+# Set up path for imports
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-# Backend directory
 backend_path = os.path.join(project_root, "Backend")
 sys.path.insert(0, backend_path)
 
+# Mark as production environment
+os.environ['ENVIRONMENT'] = 'production'
+
 try:
+    # Import and wrap the FastAPI app for Vercel
     from Backend.main import app as fastapi_app
     from mangum import Mangum
     
-    # Vercel's Python runtime expects 'app' or 'application' as the variable name
-    app = Mangum(fastapi_app)
+    # Create Mangum handler for Vercel's Python runtime
+    app = Mangum(fastapi_app, lifespan="off")
+    
+    # Export as both app and application for compatibility
     application = app
+    
+    print("✓ Vercel serverless function initialized successfully", flush=True)
+    
+except ImportError as e:
+    print(f"✗ Import Error: Missing dependency - {e}", flush=True)
+    raise
 except Exception as e:
-    print(f"Import Error: {e}")
-    raise e
+    print(f"✗ Fatal Error during initialization: {e}", flush=True)
+    import traceback
+    traceback.print_exc()
+    raise
