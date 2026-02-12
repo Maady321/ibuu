@@ -16,7 +16,7 @@ try:
         DATABASE_URL,
         pool_pre_ping=True,  
         pool_recycle=3600,   
-        echo=os.getenv("ENVIRONMENT") == "development"  
+        echo=False 
     )
     
     with engine.connect() as connection:
