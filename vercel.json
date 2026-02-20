@@ -1,41 +1,17 @@
 {
   "version": 2,
-  "trailingSlash": false,
   "env": {
     "ENVIRONMENT": "production",
     "PYTHONUNBUFFERED": "1"
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.py",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-      ]
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
     },
     {
-      "src": "/api$",
-      "dest": "/api/index.py",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-      ]
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "source": "/api",
+      "destination": "/api/index.py"
     }
   ]
 }
