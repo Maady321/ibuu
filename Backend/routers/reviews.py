@@ -53,6 +53,7 @@ def get_my_reviews(
                 "comment": r.comment,
                 "user_name": r.user.name if r.user else "Anonymous",
                 "service_id": r.service_id,
+                "service_name": r.service.name if r.service else "Service",
             }
         )
     return response

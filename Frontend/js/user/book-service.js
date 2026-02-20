@@ -8,20 +8,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await makeRequest(`/api/services/${serviceId}`);
     if (response.ok) {
       const service = await response.json();
+      const finalPrice = Math.floor(service.price / 100) * 100 + 99;
       document.getElementById("display-service-name").textContent =
         service.name;
       document.getElementById("display-service-price").textContent =
-        `Starting at ₹${service.price}`;
-      let icon = "fa-wrench";
-      const name = service.name.toLowerCase();
-      if (name.includes("clean")) icon = "fa-broom";
-      else if (name.includes("plumb")) icon = "fa-faucet";
-      else if (name.includes("elect")) icon = "fa-plug";
-      else if (name.includes("garden")) icon = "fa-seedling";
-      else if (name.includes("paint")) icon = "fa-paint-roller";
-      else if (name.includes("appliance")) icon = "fa-screwdriver-wrench";
-      else if (name.includes("window")) icon = "fa-window-maximize";
-      else if (name.includes("move")) icon = "fa-truck-moving";
+        `Starting at ₹${finalPrice}`;
+      const icon = window.getServiceIcon(service.name);
       document.querySelector(
         "#selected-service-display .service-icon",
       ).innerHTML = `<i class="fa-solid ${icon}"></i>`;
@@ -29,16 +21,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (e) {
     console.log("Could not fetch service details");
   }
+  // Set minimum date to today
+  const dateInput = document.getElementById("date");
+  const today = new Date().toISOString().split("T")[0];
+  if (dateInput) {
+    dateInput.setAttribute("min", today);
+  }
+
   document
     .getElementById("booking-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const bookingDate = document.getElementById("date").value;
+
+      // Validation check
+      if (bookingDate < today) {
+        window.HB.showError("date", "Please select a date from today onwards.");
+        return;
+      }
+
       const formData = {
         service_id: parseInt(document.getElementById("service_id").value),
         address: document.getElementById("address").value,
         city: document.getElementById("city").value,
         pincode: document.getElementById("zipcode").value,
-        date: document.getElementById("date").value,
+        date: bookingDate,
         time: document.getElementById("time").value,
         instructions: document.getElementById("notes").value,
       };
@@ -49,15 +57,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         if (response.ok) {
           const result = await response.json();
-          alert("Booking created successfully!");
-          window.location.href = "my-bookings.html";
+          window.HB.showToast("Booking created successfully!");
+          setTimeout(() => {
+            window.location.href = "my-bookings.html";
+          }, 1500);
         } else {
           const errorData = await response.json();
-          alert(`Booking failed: ${errorData.detail || "Unknown error"}`);
+          window.HB.showToast(errorData.detail || "Booking failed", "error");
         }
       } catch (error) {
         console.error("Error booking:", error);
-        alert("An error occurred. Please try again.");
+        window.HB.showToast("An error occurred. Please try again.", "error");
       }
     });
 });

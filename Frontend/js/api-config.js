@@ -1,12 +1,9 @@
-
-
 const API_BASE_URL = (() => {
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
 
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        const port = window.location.port;
-        return `${protocol}//${hostname}:8001`;
+        return `${protocol}//${hostname}:8000`;
     }
 
     if (hostname.includes('vercel.app') || hostname.includes('homebuddy')) {
@@ -16,18 +13,27 @@ const API_BASE_URL = (() => {
     return '';
 })();
 
-window.setToken = (token) => {
-    localStorage.setItem('auth_token', token);
+
+window.setToken = (token, role = "user") => {
+    if (role === "provider") {
+        localStorage.setItem('provider_token', token);
+    } else {
+        localStorage.setItem('user_token', token);
+    }
 };
 
 window.getToken = () => {
-    return localStorage.getItem('auth_token');
+    if (window.location.pathname.includes('/provider/')) {
+        return localStorage.getItem('provider_token');
+    }
+    return localStorage.getItem('user_token');
 };
 
 window.removeToken = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data'); 
+    localStorage.removeItem('user_token');
+    localStorage.removeItem('provider_token');
 };
+
 
 window.checkAuth = () => {
     if (!window.getToken()) {
@@ -43,11 +49,12 @@ window.checkAuth = () => {
     }
 };
 
+
 async function makeRequest(endpoint, options = {}) {
     const url = API_BASE_URL ? `${API_BASE_URL}${endpoint}` : endpoint;
 
-
     const token = window.getToken();
+
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -67,7 +74,7 @@ async function makeRequest(endpoint, options = {}) {
             console.error('Unauthorized access (401). Redirecting to login...');
             window.removeToken();
             window.checkAuth();
-            return response; 
+            return response;
         }
 
         return response;
@@ -77,6 +84,140 @@ async function makeRequest(endpoint, options = {}) {
     }
 }
 
+window.getServiceIcon = (serviceName) => {
+    if (!serviceName) return "fa-wrench";
+    const name = serviceName.toLowerCase();
+
+    if (name.includes("house cleaning")) return "fa-broom";
+    if (name.includes("deep cleaning")) return "fa-hands-bubbles";
+    if (name.includes("cleaning")) return "fa-broom";
+    if (name.includes("plumb")) return "fa-faucet-drip";
+    if (name.includes("elect")) return "fa-bolt";
+    if (name.includes("ac repair") || name.includes("air cond")) return "fa-snowflake";
+    if (name.includes("carpentry") || name.includes("carpenter")) return "fa-hammer";
+    if (name.includes("paint")) return "fa-paint-roller";
+    if (name.includes("cook")) return "fa-utensils";
+    if (name.includes("laundry") || name.includes("wash")) return "fa-shirt";
+    if (name.includes("garden")) return "fa-seedling";
+    if (name.includes("appliance")) return "fa-screwdriver-wrench";
+    if (name.includes("window")) return "fa-window-maximize";
+    if (name.includes("move") || name.includes("shift")) return "fa-truck-moving";
+    if (name.includes("salon") || name.includes("beauty")) return "fa-scissors";
+    if (name.includes("pest")) return "fa-bug";
+    if (name.includes("car wash") || name.includes("vehicle")) return "fa-car";
+    if (name.includes("pet")) return "fa-paw";
+    if (name.includes("tutor") || name.includes("lesson")) return "fa-book-open-reader";
+    if (name.includes("sofa") || name.includes("upholstery")) return "fa-couch";
+    if (name.includes("purifier") || name.includes("ro service")) return "fa-droplet";
+    if (name.includes("cctv") || name.includes("security")) return "fa-video";
+    if (name.includes("smart home") || name.includes("automation")) return "fa-microchip";
+    if (name.includes("interior") || name.includes("decor")) return "fa-pen-ruler";
+
+    return "fa-wrench";
+};
+
 console.log('API Base URL configured:', API_BASE_URL || '(relative paths)');
 
+// --- UI Feedback Components (Toasts, Modals, Validation) ---
 
+// Auto-inject UI CSS
+(function injectUIStyles() {
+    if (!document.getElementById('hb-ui-styles')) {
+        const link = document.createElement('link');
+        link.id = 'hb-ui-styles';
+        link.rel = 'stylesheet';
+        // Try both relative and absolute paths for robustness
+        const cssPath = window.location.pathname.includes('/html/') ? '../../css/ui-components.css' : './Frontend/css/ui-components.css';
+        link.href = cssPath;
+        document.head.appendChild(link);
+    }
+})();
+
+window.HB = {
+    // Toast Notification
+    showToast: (message, type = 'success', duration = 3000) => {
+        let container = document.querySelector('.hb-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'hb-toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `hb-toast ${type}`;
+
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.5s ease-out forwards';
+            setTimeout(() => toast.remove(), 500);
+        }, duration);
+    },
+
+    // Confirmation Modal
+    confirm: (title, message, onConfirm) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'hb-modal-overlay';
+
+        overlay.innerHTML = `
+            <div class="hb-modal">
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="hb-modal-actions">
+                    <button class="hb-btn hb-btn-cancel">Cancel</button>
+                    <button class="hb-btn hb-btn-confirm">Confirm</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const cancelBtn = overlay.querySelector('.hb-btn-cancel');
+        const confirmBtn = overlay.querySelector('.hb-btn-confirm');
+
+        cancelBtn.onclick = () => overlay.remove();
+        confirmBtn.onclick = () => {
+            onConfirm();
+            overlay.remove();
+        };
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.remove();
+        };
+    },
+
+    // Form Validation Helpers
+    showError: (inputId, message) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        input.classList.add('hb-input-error');
+
+        const next = input.nextElementSibling;
+        if (next && next.classList.contains('hb-error-message')) {
+            next.remove();
+        }
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'hb-error-message';
+        errorDiv.textContent = message;
+        input.parentNode.insertBefore(errorDiv, input.nextSibling);
+
+        // Clear error on input
+        input.oninput = () => window.HB.clearError(inputId);
+    },
+
+    clearError: (inputId) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        input.classList.remove('hb-input-error');
+        const next = input.nextElementSibling;
+        if (next && next.classList.contains('hb-error-message')) {
+            next.remove();
+        }
+    }
+};

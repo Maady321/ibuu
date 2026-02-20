@@ -34,9 +34,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const getVal = (id) => document.getElementById(id)?.value || "";
+      const emailInput = document.getElementById("email");
+      const email = emailInput.value.trim();
+
+      // Basic Email Validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        window.HB.showError("email", "Please enter a valid email.");
+        return;
+      }
+
       const updatedData = {
         full_name: getVal("full_name"),
-        email: getVal("email"),
+        email: email,
         phone: getVal("phone"),
         address: getVal("address"),
         specialization: getVal("specialization"),
@@ -52,16 +62,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         );
         if (response.ok) {
-          alert("Profile updated successfully!");
+          window.HB.showToast("Profile updated successfully!");
           localStorage.setItem("provider_name", updatedData.full_name);
-          window.location.href = "provider-profile.html";
+          setTimeout(() => {
+            window.location.href = "provider-profile.html";
+          }, 1500);
         } else {
           const error = await response.json();
-          alert(`Error: ${error.detail || "Failed to update profile"}`);
+          window.HB.showToast(error.detail || "Failed to update profile", "error");
         }
       } catch (error) {
         console.error("Error updating profile:", error);
-        alert("An error occurred. Please try again.");
+        window.HB.showToast("An error occurred. Please try again.", "error");
       }
     });
   }

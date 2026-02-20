@@ -13,30 +13,39 @@ router = APIRouter(prefix="/api/providers", tags=["Providers"])
 @router.post("/create", response_model=ProviderResponse)
 def create_provider(provider: ProviderCreate, db: Session = Depends(get_db)):
     normalized_email = provider.email.lower().strip()
-    db_user = db.query(User).filter(User.email == normalized_email).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
 
-    new_user = User(
-        name=provider.full_name,
-        email=normalized_email,
-        password=hash_password(provider.password),
-        phone=provider.phone,
-        address=provider.address,
-        role="provider",
-    )
-    db.add(new_user)
-    db.flush()
+    db_user = db.query(User).filter(User.email == normalized_email).first()
+
+    if not db_user:
+        db_user = User(
+            name=provider.full_name,
+            email=normalized_email,
+            password=hash_password(provider.password),
+            phone=provider.phone,
+            address=provider.address,
+            role="provider",
+        )
+        db.add(db_user)
+        db.flush()
+    else:
+        db_user.role = "provider"
+
+    existing_provider = db.query(Provider).filter(Provider.user_id == db_user.id).first()
+    if existing_provider:
+        raise HTTPException(status_code=400, detail="Provider already exists")
 
     provider_data = provider.model_dump()
     provider_data["email"] = normalized_email
     provider_data["password"] = hash_password(provider.password)
-    new_provider = Provider(user_id=new_user.id, **provider_data)
+
+    new_provider = Provider(user_id=db_user.id, **provider_data)
 
     db.add(new_provider)
     db.commit()
     db.refresh(new_provider)
+
     return new_provider
+
 
 
 @router.get("/all", response_model=list[ProviderResponse])

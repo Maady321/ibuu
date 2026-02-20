@@ -1,6 +1,5 @@
 {
-  "buildCommand": "pip install -r Backend/requirements.txt",
-  "outputDirectory": ".",
+  "version": 2,
   "trailingSlash": false,
   "env": {
     "ENVIRONMENT": "production",

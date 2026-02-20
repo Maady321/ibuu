@@ -9,6 +9,7 @@ from pwd_utils import hash_password, verify_password
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
     print(f"DEBUG: Registering user: {user.email}", flush=True)
@@ -20,7 +21,9 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
 
         if db.query(User).filter(User.phone == user.phone).first():
             print(f"DEBUG: Phone already exists: {user.phone}", flush=True)
-            raise HTTPException(status_code=400, detail="Phone number already registered")
+            raise HTTPException(
+                status_code=400, detail="Phone number already registered"
+            )
 
         new_user = User(
             name=user.name,
@@ -37,16 +40,19 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
         print(f"DEBUG: User created successfully: {new_user.id}", flush=True)
 
         return {
-            "message": "User registered successfully", 
+            "message": "User registered successfully",
             "user_id": new_user.id,
             "name": new_user.name,
-            "email": new_user.email
+            "email": new_user.email,
         }
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         print(f"CRITICAL ERROR IN REGISTER: {str(e)}", flush=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error during registration")
+        raise HTTPException(
+            status_code=500, detail="Internal Server Error during registration"
+        )
 
 
 @router.post("/login")
@@ -55,21 +61,29 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 
     try:
         normalized_email = user.email.lower().strip()
-        db_user = db.query(User).filter(User.email == normalized_email).first()
+        db_user = (
+            db.query(User)
+            .filter(User.email == normalized_email, User.role == "user")
+            .first()
+        )
 
         if not db_user:
             print(f"FAILED: User not found: {normalized_email}", flush=True)
             raise HTTPException(
-                status_code=401, detail=f"Account with email '{normalized_email}' not found"
+                status_code=401,
+                detail=f"Account with email '{normalized_email}' not found",
             )
 
         if not verify_password(user.password, db_user.password):
             print(f"FAILED: Password mismatch for {normalized_email}", flush=True)
             raise HTTPException(
-                status_code=401, detail="Incorrect password. Please check and try again."
+                status_code=401,
+                detail="Incorrect password. Please check and try again.",
             )
 
-        access_token = create_access_token(data={"sub": str(db_user.id), "role": "user"})
+        access_token = create_access_token(
+            data={"sub": str(db_user.id), "role": "user"}
+        )
         print(f"SUCCESS: Login successful for {normalized_email}", flush=True)
         return {
             "message": "Login successful",
@@ -78,98 +92,18 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
             "user_id": db_user.id,
             "user_name": db_user.name,
             "email": db_user.email,
-            "role": "user"
+            "role": "user",
         }
     except HTTPException:
         raise
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         print(f"CRITICAL ERROR IN LOGIN: {e}", flush=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error during login processing")
-
-
-@router.post("/unified_login")
-def unified_login(user: UserLogin, db: Session = Depends(get_db)):
-    print(f"Unified Login attempt for: {user.email}", flush=True)
-    try:
-        if user.email == "admin@homebuddy.com" and user.password == "admin123":
-            print("Admin login successful", flush=True)
-            access_token = create_access_token(data={"sub": "admin", "role": "admin"})
-            return {
-                "message": "Login successful",
-                "access_token": access_token,
-                "token_type": "bearer",
-                "role": "admin",
-                "redirect": "/Frontend/html/admin/admin-dashboard.html"
-            }
-
-        print(f"Checking user table for {user.email}", flush=True)
-        db_user = db.query(User).filter(User.email == user.email.lower().strip()).first()
-        if db_user:
-            print(f"User found: {db_user.email}, verifying password...", flush=True)
-            if verify_password(user.password, db_user.password):
-                print("User password verified", flush=True)
-                access_token = create_access_token(data={"sub": str(db_user.id), "role": db_user.role})
-                response_data = {
-                    "message": "Login successful",
-                    "access_token": access_token,
-                    "token_type": "bearer",
-                    "role": db_user.role,
-                    "user_id": db_user.id,
-                    "name": db_user.name,
-                    "email": db_user.email,
-                    "redirect": "/Frontend/html/user/dashboard.html"
-                }
-                
-                if db_user.role == "provider":
-                    response_data["redirect"] = "/Frontend/html/provider/provider-dashboard.html"
-                    db_provider = db.query(Provider).filter(Provider.user_id == db_user.id).first()
-                    if db_provider:
-                        response_data["provider_id"] = db_provider.id
-                elif db_user.role == "admin":
-                    response_data["redirect"] = "/Frontend/html/admin/admin-dashboard.html"
-                    
-                return response_data
-            else:
-                print("User password mismatch", flush=True)
-        else:
-            print("User not found in users table", flush=True)
-
-        normalized_email = user.email.lower().strip()
-        print(f"Checking provider table for {normalized_email}", flush=True)
-        db_provider = db.query(Provider).filter(Provider.email == normalized_email).first()
-        if db_provider:
-             print(f"Provider found: {db_provider.email}, verifying password...", flush=True)
-             if verify_password(user.password, db_provider.password):
-                print("Provider password verified", flush=True)
-                access_token = create_access_token(data={"sub": str(db_provider.user_id), "role": "provider"})
-                return {
-                    "message": "Login successful",
-                    "access_token": access_token,
-                    "token_type": "bearer",
-                    "role": "provider",
-                    "provider_id": db_provider.id,
-                    "user_id": db_provider.user_id,
-                    "name": db_provider.full_name,
-                    "email": db_provider.email,
-                    "redirect": "/Frontend/html/provider/provider-dashboard.html"
-                }
-             else:
-                print("Provider password mismatch", flush=True)
-        else:
-            print("Provider not found in providers table", flush=True)
-
-        print("Login failed: Invalid credentials", flush=True)
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"CRITICAL ERROR IN LOGIN: {str(e)}", flush=True)
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail="Internal Server Error during login processing"
+        )
 
 
 @router.post("/provider/login")
@@ -177,34 +111,55 @@ def login_provider(user: UserLogin, db: Session = Depends(get_db)):
     print(f"DEBUG: Provider Login attempt for email: '{user.email}'", flush=True)
 
     try:
-        db_provider = db.query(Provider).filter(Provider.email == user.email).first()
+        normalized_email = user.email.lower().strip()
 
-        if not db_provider:
-            print(f"DEBUG: No provider found with email: '{user.email}'", flush=True)
-            raise HTTPException(status_code=401, detail="Invalid email or password")
-
-        if not verify_password(user.password, db_provider.password):
-            print(f"DEBUG: Password mismatch for provider: '{user.email}'", flush=True)
-            raise HTTPException(status_code=401, detail="Invalid email or password")
-
-        print(
-            f"DEBUG: Login successful for provider: '{user.email}', ID: {db_provider.id}",
-            flush=True,
+        db_user = (
+            db.query(User)
+            .filter(User.email == normalized_email, User.role == "provider")
+            .first()
         )
-        access_token = create_access_token(data={"sub": str(db_provider.user_id), "role": "provider"})
+
+        if not db_user:
+            print(
+                f"DEBUG: Provider account not found for: '{normalized_email}'",
+                flush=True,
+            )
+            raise HTTPException(status_code=401, detail="Provider account not found")
+
+        if not verify_password(user.password, db_user.password):
+            print(
+                f"DEBUG: Password mismatch for provider: '{normalized_email}'",
+                flush=True,
+            )
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+
+        db_provider = db.query(Provider).filter(Provider.user_id == db_user.id).first()
+
+        access_token = create_access_token(
+            data={"sub": str(db_user.id), "role": "provider"}
+        )
+
+        print(f"DEBUG: Provider login successful: '{normalized_email}'", flush=True)
+
         return {
             "message": "Login successful",
             "access_token": access_token,
             "token_type": "bearer",
-            "provider_id": db_provider.id,
-            "user_id": db_provider.user_id,
-            "full_name": db_provider.full_name,
+            "provider_id": db_provider.id if db_provider else None,
+            "user_id": db_user.id,
+            "full_name": db_user.name,
         }
+
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"DEBUG: Exception during login: {str(e)}", flush=True)
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+
+        traceback.print_exc()
+        print(f"CRITICAL ERROR IN PROVIDER LOGIN: {str(e)}", flush=True)
+        raise HTTPException(
+            status_code=500, detail="Internal Server Error during provider login"
+        )
 
 
 @router.get("/users")

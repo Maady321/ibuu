@@ -1,35 +1,47 @@
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value;
+
+  const emailInput = document.getElementById("email");
+  const email = emailInput.value.trim();
   const password = document.getElementById("password").value;
+
+  // Basic Email Validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    window.HB.showError("email", "Please enter a valid email.");
+    return;
+  }
+
   try {
-    const response = await makeRequest("/api/auth/unified_login", {
+    const response = await makeRequest("/api/auth/provider/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
+
     if (response.ok) {
       const result = await response.json();
 
-      localStorage.clear();
-
       if (result.access_token) {
-        window.setToken(result.access_token);
+        window.setToken(result.access_token, "provider");
       }
 
-      localStorage.setItem("role", result.role);
-      localStorage.setItem("user_id", result.user_id);
+      localStorage.setItem("role", "provider");
       localStorage.setItem("provider_id", result.provider_id);
-      localStorage.setItem("provider_name", result.name);
-      localStorage.setItem("provider_email", result.email);
+      localStorage.setItem("user_id", result.user_id);
+      localStorage.setItem("provider_name", result.full_name);
 
-      alert(`Welcome back, ${result.name}!`);
-      window.location.href = result.redirect;
+      window.HB.showToast(`Welcome back, ${result.full_name}!`);
+      setTimeout(() => {
+        window.location.href = "/Frontend/html/provider/provider-dashboard.html";
+      }, 1000);
+
     } else {
       const errorData = await response.json();
-      alert(`Login failed: ${errorData.detail || "Invalid credentials"}`);
+      window.HB.showToast(errorData.detail || "Invalid credentials", "error");
     }
+
   } catch (error) {
     console.error("Error logging in:", error);
-    alert("An error occurred. Please try again.");
+    window.HB.showToast("An error occurred. Please try again.", "error");
   }
 });

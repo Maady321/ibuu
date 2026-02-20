@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="order-details">
                     <div class="order-detail">
                         <span class="detail-label">Service</span>
-                        <span class="detail-value">${booking.service_name}</span>
+                        <span class="detail-value"><i class="fa-solid ${window.getServiceIcon(booking.service_name)}"></i> ${booking.service_name}</span>
                     </div>
                     <div class="order-detail">
                         <span class="detail-label">Customer</span>
@@ -60,25 +60,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 async function completeBooking(bookingId) {
-  if (!confirm("Mark this service as completed?")) return;
-  try {
-    const response = await makeRequest(
-      `/api/bookings/provider/${bookingId}/complete`,
-      {
-        method: "PUT",
-      },
-    );
-    if (response.ok) {
-      alert("Booking completed!");
-      location.reload();
-    } else {
-      const error = await response.json();
-      alert(`Error: ${error.detail}`);
-    }
-  } catch (error) {
-    console.error("Error completing:", error);
-    alert("Failed to complete booking");
-  }
+  window.HB.confirm(
+    "Complete Service",
+    "Are you sure you want to mark this service as completed?",
+    async () => {
+      try {
+        const response = await makeRequest(
+          `/api/bookings/provider/${bookingId}/complete`,
+          {
+            method: "PUT",
+          },
+        );
+        if (response.ok) {
+          window.HB.showToast("Booking completed!");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          const error = await response.json();
+          window.HB.showToast(`Error: ${error.detail}`, "error");
+        }
+      } catch (error) {
+        console.error("Error completing:", error);
+        window.HB.showToast("Failed to complete booking", "error");
+      }
+    },
+  );
 }
 function updateNavBar() {
   const providerName = localStorage.getItem("provider_name");

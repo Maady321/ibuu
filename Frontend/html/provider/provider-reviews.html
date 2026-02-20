@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Reviews - HomeBuddy Helper</title>
+    <link rel="stylesheet" href="../../css/provider/provider-styles.css" />
+    <link rel="stylesheet" href="../../css/provider/provider-reviews.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-house"></i></span>
+                <h1>HomeBuddy Helper</h1>
+            </div>
+            <div class="nav-right">
+                <a href="provider-profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to
+                    Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="reviews-container">
+        <div class="reviews-header">
+            <h2>Your Service Reviews</h2>
+            <span id="total-reviews-count" class="review-service-tag">Loading reviews...</span>
+        </div>
+
+        <div id="reviews-list" class="reviews-list">
+            <div class="no-reviews">Loading...</div>
+        </div>
+    </main>
+
+    <script src="../../js/api-config.js"></script>
+    <script src="../../js/provider/provider-reviews.js" defer></script>
+</body>
+
+</html>

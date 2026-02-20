@@ -1,0 +1,72 @@
+/* Reviews Page Styling */
+.reviews-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.reviews-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-btn {
+    color: #5A6D7A;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.review-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #5A6D7A;
+}
+
+.review-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.reviewer-name {
+    font-weight: 700;
+    color: #2D3748;
+}
+
+.review-stars {
+    color: #F6AD55;
+}
+
+.review-service-tag {
+    display: inline-block;
+    background: #EDF2F7;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    color: #4A5568;
+}
+
+.review-content {
+    color: #4A5568;
+    line-height: 1.6;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 4rem;
+    color: #A0AEC0;
+}

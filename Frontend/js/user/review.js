@@ -16,8 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const booking = await response.json();
         document.getElementById("display-provider-name").innerHTML =
           `<i class="fa-solid fa-user"></i> Provider: ${booking.provider_name}`;
+        const icon = window.getServiceIcon(booking.service_name);
         document.getElementById("display-service-name").innerHTML =
-          `<i class="fa-solid fa-wrench"></i> ${booking.service_name}`;
+          `<i class="fa-solid ${icon}"></i> ${booking.service_name}`;
         document.getElementById("display-booking-date").innerHTML =
           `<i class="fa-regular fa-calendar-check"></i> ${booking.date} at ${booking.time}`;
       }

@@ -26,41 +26,41 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.className = "order-card";
       const serviceName = booking.service_id;
       card.innerHTML = `
-                \u003cdiv class="order-header"\u003e
-                  \u003cspan class="order-id"\u003eOrder #${booking.id}\u003c/span\u003e
-                  \u003cspan class="order-status status-new"\u003eRequest\u003c/span\u003e
-                \u003c/div\u003e
-                \u003cdiv class="order-details"\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eService\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-solid fa-bell-concierge"\u003e\u003c/i\u003e ${booking.service_name}\u003c/span\u003e
-                  \u003c/div\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eCustomer\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-solid fa-user"\u003e\u003c/i\u003e ${booking.user_name || "Unknown"}\u003c/span\u003e
-                  \u003c/div\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eMobile\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-solid fa-phone"\u003e\u003c/i\u003e ${booking.user_phone || "N/A"}\u003c/span\u003e
-                  \u003c/div\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eDate \u0026 Time\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-regular fa-calendar"\u003e\u003c/i\u003e ${booking.date} - \u003ci class="fa-regular fa-clock"\u003e\u003c/i\u003e ${booking.time}\u003c/span\u003e
-                  \u003c/div\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eInstructions\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-solid fa-circle-info"\u003e\u003c/i\u003e ${booking.instructions || "No special instructions"}\u003c/span\u003e
-                  \u003c/div\u003e
-                  \u003cdiv class="order-detail"\u003e
-                    \u003cspan class="detail-label"\u003eAddress\u003c/span\u003e
-                    \u003cspan class="detail-value"\u003e\u003ci class="fa-solid fa-location-dot"\u003e\u003c/i\u003e ${booking.address}, ${booking.city} - ${booking.pincode}\u003c/span\u003e
-                  \u003c/div\u003e
-                \u003c/div\u003e
-                \u003cdiv class="order-actions"\u003e
-                    \u003cbutton class="btn-accept" onclick="acceptBooking(${booking.id})"\u003e\u003ci class="fa-solid fa-check"\u003e\u003c/i\u003e Accept Order\u003c/button\u003e
-                    \u003c!-- Reject not implemented in backend yet --\u003e
-                \u003c/div\u003e
-            `;
+                <div class="order-header">
+                            <span class="order-id">Order #${booking.id}</span>
+              <span class="order-status status-new">Request</span>
+            </div>
+            <div class="order-details">
+              <div class="order-detail">
+                <span class="detail-label">Service</span>
+                <span class="detail-value"><i class="fa-solid ${window.getServiceIcon(booking.service_name)}"></i> ${booking.service_name}</span>
+              </div>
+              <div class="order-detail">
+                <span class="detail-label">Customer</span>
+                <span class="detail-value"><i class="fa-solid fa-user"></i> ${booking.user_name || "Unknown"}</span>
+              </div>
+              <div class="order-detail">
+                <span class="detail-label">Mobile</span>
+                <span class="detail-value"><i class="fa-solid fa-phone"></i> ${booking.user_phone || "N/A"}</span>
+              </div>
+              <div class="order-detail">
+                <span class="detail-label">Date & Time</span>
+                <span class="detail-value"><i class="fa-regular fa-calendar"></i> ${booking.date} - <i class="fa-regular fa-clock"></i> ${booking.time}</span>
+              </div>
+              <div class="order-detail">
+                <span class="detail-label">Instructions</span>
+                <span class="detail-value"><i class="fa-solid fa-circle-info"></i> ${booking.instructions || "No special instructions"}</span>
+              </div>
+              <div class="order-detail">
+                <span class="detail-label">Address</span>
+                <span class="detail-value"><i class="fa-solid fa-location-dot"></i> ${booking.address}, ${booking.city} - ${booking.pincode}</span>
+              </div>
+            </div>
+            <div class="order-actions">
+              <button class="btn-accept" onclick="acceptBooking(${booking.id})"><i class="fa-solid fa-check"></i> Accept Order</button>
+              <!-- Reject not implemented in backend yet -->
+            </div>`;
+
       container.appendChild(card);
     });
   } catch (error) {
@@ -110,26 +110,30 @@ function updateNavBar() {
 }
 
 async function acceptBooking(bookingId) {
-  if (!confirm("Are you sure you want to accept this booking?")) return;
+  window.HB.confirm(
+    "Accept Order",
+    "Are you sure you want to accept this booking request?",
+    async () => {
+      try {
+        const response = await makeRequest(
+          `/api/bookings/provider/${bookingId}/confirm`,
+          {
+            method: "PUT",
+          },
+        );
 
-  try {
-    const response = await makeRequest(
-      `/api/bookings/provider/${bookingId}/confirm`,
-      {
-        method: "PUT",
-      },
-    );
-
-    if (response.ok) {
-      alert("Booking confirmed!");
-      await updateStatistics();
-      location.reload();
-    } else {
-      const error = await response.json();
-      alert(`Error: ${error.detail}`);
-    }
-  } catch (error) {
-    console.error("Error accepting:", error);
-    alert("Failed to accept booking");
-  }
+        if (response.ok) {
+          window.HB.showToast("Booking confirmed!");
+          await updateStatistics();
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          const error = await response.json();
+          window.HB.showToast(`Error: ${error.detail}`, "error");
+        }
+      } catch (error) {
+        console.error("Error accepting:", error);
+        window.HB.showToast("Failed to accept booking", "error");
+      }
+    },
+  );
 }

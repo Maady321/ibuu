@@ -1,9 +1,19 @@
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value.trim();
+
+  const emailInput = document.getElementById("email");
+  const email = emailInput.value.trim();
   const password = document.getElementById("password").value;
+
+  // Basic Email Validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    window.HB.showError("email", "Please enter a valid email.");
+    return;
+  }
+
   try {
-    const response = await makeRequest("/api/auth/unified_login", {
+    const response = await makeRequest("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -11,44 +21,27 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     if (response.ok) {
       const result = await response.json();
 
-      localStorage.clear();
-
       if (result.access_token) {
-        window.setToken(result.access_token);
+        window.setToken(result.access_token, "user");
       }
 
-      localStorage.setItem("role", result.role);
+      localStorage.setItem("role", "user");
+      localStorage.setItem("user_id", result.user_id);
+      localStorage.setItem("user_name", result.user_name);
+      localStorage.setItem("user_email", result.email);
 
-      if (result.role === "user") {
-        localStorage.setItem("user_id", result.user_id);
-        localStorage.setItem("user_name", result.name);
-        localStorage.setItem("user_email", result.email);
-      } else if (result.role === "provider") {
-        localStorage.setItem("provider_id", result.provider_id);
-        localStorage.setItem("user_id", result.user_id);
-        localStorage.setItem("provider_name", result.name);
-        localStorage.setItem("provider_email", result.email);
-      } else if (result.role === "admin") {
-        localStorage.setItem("admin_logged_in", "true");
-      }
+      window.HB.showToast("Welcome back! Logging in...");
+      setTimeout(() => {
+        window.location.href = "/Frontend/html/user/dashboard.html";
+      }, 1000);
 
-      alert(`Welcome back! Logging in as ${result.role}...`);
-      window.location.href = result.redirect;
     } else {
-      let errorDetail = "Invalid credentials";
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const errorData = await response.json();
-        errorDetail = errorData.detail || errorDetail;
-      } else {
-        const text = await response.text();
-        console.error("Non-JSON error response from server:", text);
-        errorDetail = `Server Error: ${response.status} ${response.statusText}`;
-      }
-      alert(`Login failed: ${errorDetail}`);
+      const errorData = await response.json();
+      window.HB.showToast(errorData.detail || "Invalid credentials", "error");
     }
+
   } catch (error) {
     console.error("Login Fetch Error:", error);
-    alert(`An error occurred: ${error.message}`);
+    window.HB.showToast("An error occurred. Please try again.", "error");
   }
 });

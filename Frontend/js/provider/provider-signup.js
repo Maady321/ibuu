@@ -27,16 +27,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const emailInput = document.getElementById("email");
+    const email = emailInput.value;
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
+
+    // Basic Email Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      window.HB.showError("email", "Please enter a valid email.");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      window.HB.showToast("Passwords do not match!", "error");
       return;
     }
 
     const formData = {
       full_name: document.getElementById("fullname").value,
-      email: document.getElementById("email").value,
+      email: email,
       phone: document.getElementById("phone").value,
       dob: document.getElementById("dob").value,
       address: document.getElementById("address").value,
@@ -56,15 +66,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       if (response.ok) {
         const result = await response.json();
-        alert("Registration successful! Redirecting to login...");
-        window.location.href = "provider-login.html";
+        window.HB.showToast("Registration successful!");
+        setTimeout(() => {
+          window.location.href = "provider-login.html";
+        }, 1500);
       } else {
         const errorData = await response.json();
-        alert(`Registration failed: ${errorData.detail || "Unknown error"}`);
+        window.HB.showToast(errorData.detail || "Registration failed", "error");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred. Please try again.");
+      window.HB.showToast("An error occurred. Please try again.", "error");
     }
   });
 });

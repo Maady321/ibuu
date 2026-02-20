@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       safeSetText("detail-email", p.email);
       safeSetText("detail-phone", p.phone || "N/A");
       safeSetText("detail-address", p.address);
-      safeSetText("detail-service", p.service_name);
+      safeSetHtml("detail-service", `<i class="fa-solid ${window.getServiceIcon(p.service_name)}"></i> ${p.service_name}`);
       safeSetText("detail-experience", `${p.years_experience} years`);
       safeSetText("detail-specialization", p.specialization);
       safeSetText("profile-bio", p.bio);
@@ -98,6 +98,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <div class="review-header">
                         <strong>${r.user_name}</strong>
                         <span>${stars} ${r.rating}.0</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #5A6D7A; margin-bottom: 0.5rem;">
+                        <i class="fa-solid ${window.getServiceIcon(r.service_name)}"></i> ${r.service_name}
                     </div>
                     <p>"${r.comment}"</p>
                     <span class="review-date">Recent</span>

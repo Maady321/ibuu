@@ -85,6 +85,43 @@ body {
     font-size: 1.1rem;
 }
 
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 2.5rem auto;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #5A6D7A;
+    font-size: 1.1rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3.5rem;
+    border: 2px solid #C9D6DF;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #5A6D7A;
+    box-shadow: 0 4px 12px rgba(90, 109, 122, 0.15);
+}
+
+.search-input::placeholder {
+    color: #A8B5C0;
+}
+
 .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -93,59 +130,122 @@ body {
 
 .service-card {
     background-color: white;
-    border-radius: 12px;
-    padding: 2rem;
+    border-radius: 20px;
+    padding: 2.5rem 1.5rem;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    border: 1px solid #edf2f7;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
 .service-card:hover {
-    border-color: #C9D6DF;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: #5A6D7A;
 }
 
 .service-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: #5A6D7A;
+    background: #f8fafc;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    border-radius: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover .service-icon {
+    background: #5A6D7A;
+    color: white;
+    transform: scale(1.1);
 }
 
 .service-card h3 {
-    font-size: 1.25rem;
-    color: #2A2E35;
+    font-size: 1.4rem;
+    color: #1a202c;
     margin-bottom: 0.75rem;
+    font-weight: 700;
 }
 
 .service-card p {
-    color: #5A6D7A;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    color: #718096;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    height: 3.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.service-price {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #FF6B35;
-    margin-bottom: 1.25rem;
+.pricing-wrapper {
+    margin-bottom: 1.75rem;
+    position: relative;
+}
+
+.mrp-price {
+    font-size: 0.9rem;
+    color: #a0aec0;
+    text-decoration: line-through;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.final-price-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.final-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2D3748;
+}
+
+.offer-badge {
+    background: #EBFFFF;
+    color: #00B5AD;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #C4F1F1;
 }
 
 .btn-book {
-    display: inline-block;
-    background-color: #2E3944;
+    display: block;
+    background-color: #5A6D7A;
     color: white;
     text-decoration: none;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: background-color 0.3s, transform 0.2s;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(90, 109, 122, 0.2);
 }
 
 .btn-book:hover {
-    background-color: #FF6B35;
+    background-color: #2D3748;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 55, 72, 0.25);
 }
 
 .footer {
@@ -197,6 +297,16 @@ body {
 
     .page-header p {
         font-size: 1rem;
+    }
+
+    .search-container {
+        margin: 0 0 2rem 0;
+        padding: 0 0.5rem;
+    }
+
+    .search-input {
+        font-size: 0.95rem;
+        padding: 0.875rem 0.875rem 0.875rem 3rem;
     }
 
     .services-grid {

@@ -36,13 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         recentBookings.forEach((booking) => {
           const activityItem = document.createElement("div");
           activityItem.className = "activity-item";
-          let icon = "fa-wrench";
-          const name = (booking.service_name || "Service").toLowerCase();
-          if (name.includes("clean")) icon = "fa-broom";
-          else if (name.includes("plumb")) icon = "fa-faucet";
-          else if (name.includes("elect")) icon = "fa-plug";
-          else if (name.includes("garden")) icon = "fa-seedling";
-          else if (name.includes("paint")) icon = "fa-paint-roller";
+          const icon = window.getServiceIcon(booking.service_name);
           const statusLabels = {
             pending: "Pending",
             confirmed: "Confirmed",

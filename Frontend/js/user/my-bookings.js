@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     console.log(`Loaded ${bookings.length} bookings`);
 
-    window.bookingProviders = {}; 
+    window.bookingProviders = {};
 
     bookings.forEach((booking, index) => {
       let status = (booking.status || "pending").toLowerCase();
@@ -47,9 +47,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else if (status === "completed") {
         actions = `<a href="review.html?booking_id=${booking.id}&provider_id=${booking.provider_id}" class="a-review">Give Rating</a>`;
       }
+      const icon = window.getServiceIcon(booking.service_name);
       card.innerHTML = `
                 <div class="booking-icon">
-                    <i class="fa-solid fa-calendar-check"></i>
+                    <i class="fa-solid ${icon}"></i>
                 </div>
                 <div class="booking-info">
                     <h3>${booking.service_name}</h3> 
@@ -99,22 +100,24 @@ window.showContact = function (bookingId) {
   );
 };
 async function cancelBooking(bookingId) {
-  if (!confirm("Are you sure you want to cancel this booking?")) return;
-  try {
-    const response = await makeRequest(
-      `/api/bookings/${bookingId}`,
-      {
-        method: "DELETE"
+  window.HB.confirm(
+    "Cancel Booking",
+    "Are you sure you want to cancel this booking?",
+    async () => {
+      try {
+        const response = await makeRequest(`/api/bookings/${bookingId}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          window.HB.showToast("Booking cancelled.");
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          window.HB.showToast("Failed to cancel booking.", "error");
+        }
+      } catch (error) {
+        console.error("Error cancelling:", error);
+        window.HB.showToast("Error cancelling booking.", "error");
       }
-    );
-    if (response.ok) {
-      alert("Booking cancelled.");
-      location.reload();
-    } else {
-      alert("Failed to cancel booking.");
-    }
-  } catch (error) {
-    console.error("Error cancelling:", error);
-    alert("Error cancelling booking.");
-  }
+    },
+  );
 }
