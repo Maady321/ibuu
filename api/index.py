@@ -3,26 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import sys
 
-# 1. FIX PATHING FOR RECURSIVE IMPORTS
-# index.py is in api/
-# project_root is the parent of api/
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-backend_dir = os.path.join(project_root, "Backend")
+# 1. PATHING FOR FLATTENED STRUCTURE
+# Since index.py is alongside auth.py, etc., we add the current dir to sys.path
+api_dir = os.path.dirname(os.path.abspath(__file__))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
 
-# Add root for 'from Backend.xxx'
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-# Add Backend root for 'from xxx' inside Backend
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
-# Add api dir just in case
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
-app = FastAPI(title="HomeBuddy", version="45.0-NAMESPACE")
+app = FastAPI(title="HomeBuddy", version="46.0-MONOLITH")
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,8 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Relative imports from Backend namespace
-from Backend.routers import users, bookings, providers, reviews, services, supports
+# TOP-LEVEL SIBLING IMPORTS
+from routers import users, bookings, providers, reviews, services, supports
 
 app.include_router(users.router)
 app.include_router(bookings.router)
@@ -46,14 +33,13 @@ app.include_router(supports.router)
 def infra_test():
     return {
         "status": "ok", 
-        "version": "45.0-NAMESPACE", 
-        "project_root": project_root,
-        "backend_dir": backend_dir,
+        "version": "46.0-MONOLITH", 
+        "api_dir": api_dir,
         "sys_path": sys.path
     }
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "message": "Backend restored and healthy"}
+    return {"status": "ok", "message": "Backend monolith is healthy"}
 
 handler = app
