@@ -1,97 +1,90 @@
 import sys
 import os
 import logging
+import traceback
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import traceback
 
-# 1. ENVIRONMENT CONFIG
-ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+# 1. IMMEDIATE DB URL FIX (FORCING PG8000)
+db_url_raw = os.getenv("DATABASE_URL", "")
+db_url_fixed = "N/A"
 
-# 2. PATHING FOR SERVERLESS
-# Ensure 'api' folder is in sys.path so we can import modules directly
-project_root = os.getcwd() # /var/task on Vercel
+if db_url_raw:
+    # Extremely robust replacement
+    if "pg8000" not in db_url_raw:
+        if db_url_raw.startswith("postgres://"):
+            db_url_fixed = db_url_raw.replace("postgres://", "postgresql+pg8000://", 1)
+        elif db_url_raw.startswith("postgresql://"):
+            db_url_fixed = db_url_raw.replace("postgresql://", "postgresql+pg8000://", 1)
+        else:
+            # Fallback for weirdly formatted strings
+            db_url_fixed = db_url_raw.replace("://", "+pg8000://", 1)
+        
+        # Override environment for sub-modules
+        os.environ["DATABASE_URL"] = db_url_fixed
+    else:
+        db_url_fixed = db_url_raw
+
+# 2. PATHING
+project_root = os.getcwd() 
 api_dir = os.path.join(project_root, "api")
 if api_dir not in sys.path:
     sys.path.insert(0, api_dir)
 
-# 3. LOGGING
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# 3. CORE APP
+app = FastAPI(redirect_slashes=False, title="HomeBuddy API", version="3.0-ULTIMATE-FIX")
 
-# 4. FASTAPI APP INITIALIZATION
-app = FastAPI(redirect_slashes=False, title="HomeBuddy API (Production)", version="2.0.0-FIX-DB")
-
-# 5. CORS CONFIG
-if ENVIRONMENT == "production":
-    frontend_url = os.getenv("FRONTEND_URL", "").strip()
-    allowed_origins = [u for u in [frontend_url] if u]
-else:
-    allowed_origins = ["*"] # Local development
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins, 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# 6. APP CONTENT (Logic re-integration)
+# 4. DIAGNOSTICS HELPERS
 init_status = "Not Started"
 init_error = None
 
+# LOAD LOGIC
 try:
     from db.database import Base, engine
     from routers import users, bookings, providers, reviews, services, supports
     import models
 
-    # Verify/Create tables (No import-time DB tests, handled by SQLAlchemy pre-ping)
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables verified.")
-
-    # Include routers with /api prefix as required by Vercel rewrites
+    
     app.include_router(users.router)
     app.include_router(bookings.router)
     app.include_router(providers.router)
     app.include_router(reviews.router)
     app.include_router(services.router)
     app.include_router(supports.router)
+    
     init_status = "Success"
-
 except Exception as e:
     init_status = "Failed"
     init_error = f"{str(e)}\n{traceback.format_exc()}"
-    logger.error(f"Logic Import Error: {init_error}")
 
-# 7. TOP-LEVEL ROUTES
+# 5. ROUTES
 @app.get("/api/infra-test")
 def infra_test():
-    # Masked DB URL check
-    db_url = os.getenv("DATABASE_URL", "NOT_SET")
-    url_transformed = "N/A"
-    try:
-        from db.database import DATABASE_URL as transformed
-        url_transformed = transformed.split(":")[0] + "://***"
-    except:
-        pass
-
     return {
         "status": "ok",
-        "message": "Full Backend package is LIVE on flattened V1 stack (v2.0-FIX-DB)",
+        "version": "3.0-ULTIMATE-FIX",
         "init_status": init_status,
         "init_error": init_error,
-        "db_url_prefix": db_url.split(":")[0] if db_url else "N/A",
-        "db_url_transformed": url_transformed,
-        "env": ENVIRONMENT,
-        "files_in_api": os.listdir(api_dir) if os.path.exists(api_dir) else "N/A"
+        "db": {
+            "raw_prefix": db_url_raw.split(":")[0] if db_url_raw else "N/A",
+            "fixed_prefix": db_url_fixed.split(":")[0] if db_url_fixed != "N/A" else "N/A",
+            "env_now": os.getenv("DATABASE_URL", "").split(":")[0]
+        },
+        "sys": {
+            "python": sys.version,
+            "path": sys.path,
+            "cwd": os.getcwd()
+        }
     }
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "init": init_status}
 
 @app.get("/api")
 def root():
-    return {"message": "HomeBuddy API Running"}
+    return {"message": "HomeBuddy API v3.0 Live"}
+
+# Vercel entry
+handler = app
