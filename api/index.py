@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 4. FASTAPI APP INITIALIZATION
-app = FastAPI(redirect_slashes=False, title="HomeBuddy API (Production)", version="1.0.0")
+app = FastAPI(redirect_slashes=False, title="HomeBuddy API (Production)", version="2.0.0-FIX-DB")
 
 # 5. CORS CONFIG
 if ENVIRONMENT == "production":
@@ -68,11 +68,22 @@ except Exception as e:
 # 7. TOP-LEVEL ROUTES
 @app.get("/api/infra-test")
 def infra_test():
+    # Masked DB URL check
+    db_url = os.getenv("DATABASE_URL", "NOT_SET")
+    url_transformed = "N/A"
+    try:
+        from db.database import DATABASE_URL as transformed
+        url_transformed = transformed.split(":")[0] + "://***"
+    except:
+        pass
+
     return {
         "status": "ok",
-        "message": "Full Backend package is LIVE on flattened V1 stack",
+        "message": "Full Backend package is LIVE on flattened V1 stack (v2.0-FIX-DB)",
         "init_status": init_status,
         "init_error": init_error,
+        "db_url_prefix": db_url.split(":")[0] if db_url else "N/A",
+        "db_url_transformed": url_transformed,
         "env": ENVIRONMENT,
         "files_in_api": os.listdir(api_dir) if os.path.exists(api_dir) else "N/A"
     }
