@@ -14,4 +14,4 @@ class ServiceResponse(BaseModel):
     description: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True

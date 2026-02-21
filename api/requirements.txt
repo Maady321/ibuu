@@ -5,4 +5,7 @@ python-dotenv
 python-multipart
 pyjwt
 requests
-# bcrypt and psycopg2-binary will be re-added next
+psycopg2-binary
+passlib[bcrypt]
+bcrypt
+# Removed mangum as Vercel handles ASGI natively
