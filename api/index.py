@@ -1,17 +1,22 @@
-def handler(environ, start_response):
-    status = '200 OK'
-    headers = [('Content-Type', 'application/json')]
-    start_response(status, headers)
-    
-    import sys, os
-    import json
-    
-    response = {
-        "status": "ok",
-        "version": "30.0-WSGI-BASELINE",
-        "message": "WSGI Handler is LIVE",
-        "sys_path": sys.path,
-        "env": {k: v for k, v in os.environ.items() if "KEY" not in k and "PASS" not in k and "TOKEN" not in k}
-    }
-    
-    return [json.dumps(response).encode('utf-8')]
+from http.server import BaseHTTPRequestHandler
+import json
+import os
+import sys
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        
+        response = {
+            "status": "ok",
+            "version": "32.0-HTTP-BASELINE",
+            "message": "Raw HTTP Handler is LIVE",
+            "python_version": sys.version,
+            "cwd": os.getcwd(),
+            "path": self.path
+        }
+        
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+        return
