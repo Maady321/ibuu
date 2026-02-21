@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 # Relative imports from Backend namespace
-from routers import users, bookings, providers, reviews, services, supports
+from Backend.routers import users, bookings, providers, reviews, services, supports
 
 app.include_router(users.router)
 app.include_router(bookings.router)
