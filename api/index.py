@@ -35,8 +35,8 @@ try:
     from routers import users, bookings, providers, reviews, services, supports
     import models
 
-    # Verify/Create tables
-    Base.metadata.create_all(bind=engine)
+    # Verify/Create tables (DISABLED for diagnostic v11)
+    # Base.metadata.create_all(bind=engine)
     
     # Include routers
     app.include_router(users.router)
