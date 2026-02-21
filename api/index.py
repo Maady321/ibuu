@@ -9,6 +9,12 @@ sys.path.insert(0, backend_path)
 
 os.environ['ENVIRONMENT'] = 'production'
 
+# Load .env from Backend folder if it exists
+dotenv_path = os.path.join(backend_path, ".env")
+if os.path.exists(dotenv_path):
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path)
+
 try:
     from Backend.main import app as fastapi_app
     from mangum import Mangum
