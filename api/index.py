@@ -1,13 +1,13 @@
 import json
 
-def handler(request):
+def handler(request, context):
     return {
         "statusCode": 200,
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps({
             "status": "ok",
-            "version": "37.0-PURE-PYTHON-BASELINE",
-            "message": "Pure Python Handler is LIVE",
-            "path": request.get('path', 'unknown')
+            "version": "39.0-HANDSHAKE-SUCCESS",
+            "message": "Python Runtime Handshake Successful",
+            "method": request.get('method', 'GET') if isinstance(request, dict) else 'Unknown'
         })
     }
