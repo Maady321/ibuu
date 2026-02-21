@@ -15,18 +15,25 @@ sys.path.insert(0, backend_path)
 
 try:
     from Backend.main import app as fastapi_app
-    # Bridge FastAPI to Lambda/Vercel
-    handler = Mangum(fastapi_app, lifespan="off")
-    app = fastapi_app # Vercel also detects 'app'
+    app = fastapi_app
+    handler = Mangum(app, lifespan="off")
+    @app.get("/api/infra-test")
+    def infra_test():
+        return {"status": "ok", "message": "Full Backend package Loaded successfully on Pydantic V1 stack"}
     logger.info("Vercel serverless function initialized successfully with Backend package")
 except Exception as e:
-    logger.error(f"Backend Initialization Failed: {e}")
-    # Fallback app for debugging
+    import traceback
+    error_trace = traceback.format_exc()
+    logger.error(f"Backend Initialization Failed: {e}\n{error_trace}")
+    
     app = FastAPI()
     @app.get("/api/infra-test")
     def infra_test():
-        return {"status": "error", "message": f"Backend failed to load: {e}"}
+        return {
+            "status": "error", 
+            "message": f"Backend failed to load: {str(e)}",
+            "trace": error_trace
+        }
     handler = Mangum(app, lifespan="off")
 
-# Vercel looks for 'app' or 'handler'
 application = app
