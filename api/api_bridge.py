@@ -1,49 +1,17 @@
-import sys
-import os
-import logging
-import traceback
-from fastapi import FastAPI
-
-# 1. PATHING FOR RESTORED STRUCTURE
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
-backend_path = os.path.join(project_root, "Backend")
-sys.path.insert(0, backend_path)
-
-# 2. LOGGING
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# 3. FASTAPI BRIDGE
-try:
-    # Import the main app from the restored Backend folder
-    from Backend.main import app as fastapi_app
-    app = fastapi_app
+def handler(environ, start_response):
+    status = '200 OK'
+    headers = [('Content-Type', 'application/json')]
+    start_response(status, headers)
     
-    @app.get("/api/infra-test")
-    def infra_test():
-        return {
-            "status": "ok",
-            "version": "28.0-RESTRUCTURED",
-            "message": "Full Backend package is LIVE on restored V1 stack",
-            "sys_path": sys.path
-        }
+    import sys, os
+    import json
     
-    logger.info("Vercel: Successfully loaded Backend.main app")
+    response = {
+        "status": "ok",
+        "version": "30.0-WSGI-BASELINE",
+        "message": "WSGI Handler is LIVE",
+        "sys_path": sys.path,
+        "env": {k: v for k, v in os.environ.items() if "KEY" not in k and "PASS" not in k and "TOKEN" not in k}
+    }
     
-except Exception as e:
-    error_trace = traceback.format_exc()
-    logger.error(f"Backend Restore Failed: {e}\n{error_trace}")
-    
-    app = FastAPI()
-    @app.get("/api/infra-test")
-    def infra_test():
-        return {
-            "status": "restore_error",
-            "message": str(e),
-            "trace": error_trace
-        }
-
-# Vercel entry
-handler = app
+    return [json.dumps(response).encode('utf-8')]
