@@ -10,17 +10,11 @@ db_url_raw = os.getenv("DATABASE_URL", "")
 db_url_fixed = "N/A"
 
 if db_url_raw:
-    # Extremely robust replacement
-    if "pg8000" not in db_url_raw:
-        if db_url_raw.startswith("postgres://"):
-            db_url_fixed = db_url_raw.replace("postgres://", "postgresql+pg8000://", 1)
-        elif db_url_raw.startswith("postgresql://"):
-            db_url_fixed = db_url_raw.replace("postgresql://", "postgresql+pg8000://", 1)
-        else:
-            # Fallback for weirdly formatted strings
-            db_url_fixed = db_url_raw.replace("://", "+pg8000://", 1)
-        
-        # Override environment for sub-modules
+    # Definitive Scheme Override (The most bulletproof way)
+    if "://" in db_url_raw:
+        _, rest = db_url_raw.split("://", 1)
+        db_url_fixed = f"postgresql+pg8000://{rest}"
+        # Override environment for all sub-modules
         os.environ["DATABASE_URL"] = db_url_fixed
     else:
         db_url_fixed = db_url_raw
@@ -32,7 +26,7 @@ if api_dir not in sys.path:
     sys.path.insert(0, api_dir)
 
 # 3. CORE APP
-app = FastAPI(redirect_slashes=False, title="HomeBuddy API", version="3.0-ULTIMATE-FIX")
+app = FastAPI(redirect_slashes=False, title="HomeBuddy API", version="4.0-BOMBSHELL-FIX")
 
 # 4. DIAGNOSTICS HELPERS
 init_status = "Not Started"
@@ -63,13 +57,13 @@ except Exception as e:
 def infra_test():
     return {
         "status": "ok",
-        "version": "3.0-ULTIMATE-FIX",
+        "version": "4.0-BOMBSHELL-FIX",
         "init_status": init_status,
         "init_error": init_error,
         "db": {
-            "raw_prefix": db_url_raw.split(":")[0] if db_url_raw else "N/A",
-            "fixed_prefix": db_url_fixed.split(":")[0] if db_url_fixed != "N/A" else "N/A",
-            "env_now": os.getenv("DATABASE_URL", "").split(":")[0]
+            "raw_prefix": db_url_raw.split("://")[0] if "://" in db_url_raw else "N/A",
+            "fixed_prefix": db_url_fixed.split("://")[0] if "://" in db_url_fixed else "N/A",
+            "env_now": os.getenv("DATABASE_URL", "").split("://")[0]
         },
         "sys": {
             "python": sys.version,
