@@ -1,18 +1,10 @@
-from fastapi import FastAPI
-from mangum import Mangum
+from http.server import BaseHTTPRequestHandler
 
-app = FastAPI()
-
-@app.get("/api/infra-test")
-def infra_test():
-    return {"status": "ok", "message": "Absolute bare minimum is working"}
-
-@app.get("/api/health")
-def health():
-    return {"status": "ok"}
-
-# The Mangum handler
-handler = Mangum(app, lifespan="off")
-
-# Vercel looks for 'app' or 'handler'
-application = app
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type','application/json')
+        self.end_headers()
+        import json
+        self.wfile.write(json.dumps({"status": "ok", "message": "Standard Library Python is working"}).encode('utf-8'))
+        return
