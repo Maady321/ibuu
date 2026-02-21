@@ -14,8 +14,13 @@ if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set.")
 
 # For Vercel/Serverless using pure-python pg8000 driver
-if DATABASE_URL.startswith("postgresql://") and "pg8000" not in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://")
+# Handles both postgresql:// and postgres:// (the latter is common in Supabase/Heroku)
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
+elif DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
+
+logger.info(f"Database dialect configured for pg8000: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'masked'}")
 
 # Create engine — pool_pre_ping validates connections lazily (no import-time DB call)
 engine = create_engine(
