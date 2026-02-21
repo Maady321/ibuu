@@ -1,10 +1,23 @@
-from http.server import BaseHTTPRequestHandler
+from fastapi import FastAPI
+from mangum import Mangum
+import os
+from dotenv import load_dotenv
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type','application/json')
-        self.end_headers()
-        import json
-        self.wfile.write(json.dumps({"status": "ok", "message": "Standard Library Python is working"}).encode('utf-8'))
-        return
+load_dotenv()
+
+app = FastAPI()
+
+@app.get("/api/infra-test")
+def infra_test():
+    return {
+        "status": "ok", 
+        "message": "FastAPI + Mangum is working",
+        "env": os.getenv("ENVIRONMENT", "not-set")
+    }
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok"}
+
+handler = Mangum(app, lifespan="off")
+application = app
