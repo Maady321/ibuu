@@ -1,9 +1,13 @@
-fastapi==0.103.2
-pydantic<2.0.0
+fastapi
+uvicorn[standard]
 sqlalchemy
+psycopg2-binary
 python-dotenv
+passlib[bcrypt]
+pydantic
 python-multipart
+mangum
 pyjwt
 requests
-pg8000
-passlib
+bcrypt
+watchfiles
