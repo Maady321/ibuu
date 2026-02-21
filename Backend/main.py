@@ -17,16 +17,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
-APP_URL = os.getenv("APP_URL", "http://localhost:3000")
 
 if ENVIRONMENT == "production":
-    allowed_origins = [os.getenv("FRONTEND_URL")]
+    frontend_url = os.getenv("FRONTEND_URL", "").strip()
+    allowed_origins = [u for u in [frontend_url] if u]
+    if not allowed_origins:
+        logger.warning("FRONTEND_URL not set — CORS will block browser requests!")
 else:
     allowed_origins = [
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "http://localhost:8000"
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
+
 
 app = FastAPI(redirect_slashes=False, title="HomeBuddy API", version="1.0.0")
 
