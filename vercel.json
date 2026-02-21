@@ -5,18 +5,18 @@
     "PYTHONUNBUFFERED": "1"
   },
   "functions": {
-    "api/index.py": {
+    "api/*.py": {
       "maxDuration": 15
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "api/index.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/api",
-      "destination": "api/index.py"
+      "destination": "/api/index.py"
     }
   ]
 }
