@@ -19,6 +19,10 @@ app = FastAPI(
     redirect_slashes=False  # Crucial for Vercel/Netlify to prevent POST -> GET 307 redirects
 )
 
+@app.get("/")
+def read_root():
+    return {"message": "HomeBuddy API is running", "version": "55.0-RECOVERY"}
+
 @app.api_route("/api/debug-path", methods=["GET", "POST"])
 async def debug_path(request: Request):
     return {
@@ -31,10 +35,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://ibuuuuu.netlify.app",
+        "https://stellar-melba-eead27.netlify.app",
         "http://localhost:3000",
         "http://localhost:8000",
+        "http://localhost:5500",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
+        "http://127.0.0.1:5500",
         "https://full-stack-project-iota-five.vercel.app"
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",  # Support for Vercel Branch/Preview deployments
