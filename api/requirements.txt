@@ -1,5 +1,5 @@
-fastapi==0.103.2
-pydantic
+fastapi
+uvicorn
 sqlalchemy
 python-dotenv
 python-multipart
@@ -7,5 +7,5 @@ pyjwt
 requests
 pg8000
 passlib[bcrypt]
-bcrypt==4.0.1
+bcrypt
 mangum
