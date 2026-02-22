@@ -63,16 +63,37 @@ async function makeRequest(endpoint, options = {}) {
       headers: headers,
     });
 
-    if (response.status === 401) {
-      console.error("Unauthorized access (401). Redirecting to login...");
-      window.removeToken();
-      window.checkAuth();
-      return response;
+    if (!response.ok) {
+      // Try to get detailed error info
+      let errorData = "No error body";
+      try {
+        // Clone the response so we can read it without consuming the original
+        const clone = response.clone();
+        errorData = await clone.text();
+        // Try to parse as JSON for a cleaner log if possible
+        try {
+          const json = JSON.parse(errorData);
+          errorData = json;
+        } catch (e) {}
+      } catch (e) {
+        errorData = "Failed to read error body";
+      }
+
+      console.group(`[API Error] ${response.status} ${response.statusText}`);
+      console.error(`URL: ${url}`);
+      console.error(`Response Body:`, errorData);
+      console.groupEnd();
+
+      if (response.status === 401) {
+        console.warn("Unauthorized access (401). Redirecting to login...");
+        window.removeToken();
+        window.checkAuth();
+      }
     }
 
     return response;
   } catch (error) {
-    console.error(`Request failed for ${url}:`, error);
+    console.error(`[Network Error] Request failed for ${url}:`, error);
     throw error;
   }
 }
