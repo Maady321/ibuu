@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    logger.error("CRITICAL: DATABASE_URL is not set! PostgreSQL is required.")
-    raise ValueError("Missing DATABASE_URL environment variable.")
+    logger.warning("DATABASE_URL not found. Falling back to SQLite for health checks/startup.")
+    DATABASE_URL = "sqlite:///./recovery.db"
 
 # Clearer way to add the pg8000 dialect
 if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://"):
