@@ -47,7 +47,7 @@ def create_provider(provider: ProviderCreate, db: Session = Depends(get_db)):
             db.flush() # Get user ID before proceeding
 
         # 2. Extract provider-specific data (everything except password/email which go to User)
-        p_data = provider.model_dump(exclude={"password"})
+        p_data = provider.dict(exclude={"password"})
         p_data["email"] = normalized_email
 
         # 3. Create the Provider Profile linked to the User

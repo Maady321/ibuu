@@ -1,3 +1,5 @@
+// --- HomeBuddy API Config v1.0.2 [RECOVERY MODE] ---
+console.log("🚀 HB API Config Loaded - v1.0.2");
 const API_BASE =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
