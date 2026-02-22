@@ -1,0 +1,11 @@
+[build]
+  command = "echo 'No build command needed for plain HTML frontend'"
+  publish = "."
+
+[functions]
+  directory = "api"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/index/:splat"
+  status = 200

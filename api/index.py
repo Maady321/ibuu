@@ -50,5 +50,5 @@ except Exception as e:
             "trace": error_trace
         }
 
-# Vercel looks for 'app' by default
-# No need for 'handler = app' which can sometimes confuse modern runtimes
+from mangum import Mangum
+handler = Mangum(app)
