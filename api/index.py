@@ -20,48 +20,35 @@ if backend_dir not in sys.path:
 
 # 2. BRIDGING TO BACKEND PACKAGE
 try:
-    from Backend.main import app as fastapi_app
-    app = fastapi_app
+    from Backend.main import app
     
-    # Add a production diagnostic route
+    # Add a production diagnostic route directly to the main app if it loaded
     @app.get("/api/infra-test")
     def infra_test():
         return {
             "status": "ok", 
-            "version": "55.0-RECOVERY", 
-            "message": "Backend Package (Package-Mode) is LIVE",
+            "version": "56.0-FINAL", 
+            "message": "Backend Is Live",
             "project_root": project_root
         }
     
 except Exception as e:
     import traceback
     error_trace = traceback.format_exc()
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    
     app = FastAPI()
+    app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
     
-    # Enable CORS even on the error app so we can see the trace in the browser
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    
-    @app.get("/api/infra-test")
-    def infra_test():
-        return {
-            "status": "error", 
-            "message": f"Backend failed to load: {str(e)}",
-            "trace": error_trace
-        }
-    
-    # Fallback for all API routes to show the error
     @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     async def catch_all_error(path: str):
         return {
             "status": "critical_failure",
-            "message": "The backend failed to initialize. See the 'trace' field for details.",
+            "message": "Backend import failed",
             "error": str(e),
             "trace": error_trace
         }
 
-handler = app
+# Vercel looks for 'app' by default
+# No need for 'handler = app' which can sometimes confuse modern runtimes

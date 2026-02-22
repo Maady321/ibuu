@@ -2,13 +2,17 @@
   "version": 2,
   "functions": {
     "api/index.py": {
-      "runtime": "@vercel/python"
+      "runtime": "@vercel/python@3.0.7"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "api/index.py"
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index.py"
     }
   ],
   "trailingSlash": false
