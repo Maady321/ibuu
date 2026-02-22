@@ -33,8 +33,17 @@ async def debug_path(request: Request):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "https://ibuu-gvfn2snsa-maadys-projects.vercel.app",
+        "https://ibuuuuu.netlify.app",
+        "https://stellar-melba-eead27.netlify.app",
+        "https://full-stack-project-iota-five.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+    ],
+    allow_credentials=True, # Changed to True as it's often needed for tokens
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,18 +57,22 @@ import models.users, models.providers, models.services, models.bookings, models.
 
 @app.on_event("startup")
 def startup_event():
+    logger.info("Startup: Syncing database...")
     try:
-        logger.info("Initial check of database connection...")
-        # We don't necessarily want to create_all on every serverless hit, 
-        # but for this project it ensures the DB matches the schema
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database synchronized.")
+        # Only sync if using real DB, SQLite in-memory doesn't need this
+        if "sqlite" not in str(engine.url):
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database synchronized.")
     except Exception as e:
-        logger.warning(f"Database sync skipped/failed: {e}")
+        logger.error(f"Post-startup DB sync failed: {e}")
 
 @app.get("/api/infra-test")
 def infra_test():
-    return {"status": "ok", "message": "Backend Is Live", "source": "Backend.main"}
+    return {
+        "status": "ok", 
+        "message": "Backend Is Live", 
+        "db": str(engine.url).split("@")[-1] if "@" in str(engine.url) else "local"
+    }
 
 app.include_router(users.router)
 app.include_router(bookings.router)
