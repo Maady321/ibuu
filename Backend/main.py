@@ -33,17 +33,8 @@ async def debug_path(request: Request):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://ibuu-gvfn2snsa-maadys-projects.vercel.app",
-        "https://ibuuuuu.netlify.app",
-        "https://stellar-melba-eead27.netlify.app",
-        "https://full-stack-project-iota-five.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:8000",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500"
-    ],
-    allow_credentials=True, # Changed to True as it's often needed for tokens
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.netlify\.app|http://localhost:.*|http://127\.0\.0\.1:.*",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
