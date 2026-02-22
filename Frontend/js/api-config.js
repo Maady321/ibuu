@@ -6,7 +6,7 @@ const API_BASE =
     ? `http://${window.location.hostname}:8000`
     : window.location.hostname.includes("vercel.app")
       ? window.location.origin // Use current deployment for Backend
-      : "https://full-stack-project-iota-five.vercel.app";
+      : "";
 
 window.setToken = (token, role = "user") => {
   if (role === "provider") {
