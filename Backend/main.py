@@ -40,6 +40,18 @@ app.add_middleware(
 # Relative imports from Backend namespace
 from routers import users, bookings, providers, reviews, services, supports
 
+# Initialize Database Tables
+from db.database import engine, Base
+import models.users, models.providers, models.services, models.bookings, models.reviews, models.supports
+
+try:
+    logger.info("Initializing database tables...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables initialized successfully.")
+except Exception as e:
+    logger.error(f"Error initializing database: {e}")
+    # Don't crash here, might be a transient connection issue
+
 app.include_router(users.router)
 app.include_router(bookings.router)
 app.include_router(providers.router)
