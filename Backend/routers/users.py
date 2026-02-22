@@ -70,8 +70,7 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         db.rollback()
-        logger.error(f"FATAL ERROR during registration: {str(e)}")
-        traceback.print_exc()
+        logger.exception("FATAL ERROR during registration")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail="We encountered a problem setting up your account. Please try again later."

@@ -12,17 +12,15 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     logger.error("CRITICAL: DATABASE_URL is not set! PostgreSQL is required.")
-    # In production, we want to fail fast if the DB is misconfigured
-    raise ValueError("Missing DATABASE_URL environment variable. PostgreSQL connection is mandatory.")
+    raise ValueError("Missing DATABASE_URL environment variable.")
 
-# FOR VERCEL/SERVERLESS: ULTIMATE PG8000 OVERRIDE
-# This replaces any scheme (e.g. postgres://, postgresql+psycopg2://, etc.)
-# with the pure-Python pg8000 scheme for maximum compatibility.
-if "://" in DATABASE_URL:
-    scheme, rest = DATABASE_URL.split("://", 1)
-    if "postgresql" in scheme or scheme == "postgres":
-        DATABASE_URL = f"postgresql+pg8000://{rest}"
-        logger.info("Database URL finalized with postgresql+pg8000 dialect.")
+# Clearer way to add the pg8000 dialect
+if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("://", "+pg8000://", 1)
+
+# Debug: Show everything except the actual password
+safe_url = DATABASE_URL.split("@")[-1] if "@" in DATABASE_URL else "INVALID URL"
+logger.info(f"Targeting Database at: {safe_url}")
 
 # Create PostgreSQL engine with optimized pooling for serverless
 engine = create_engine(
