@@ -1,54 +1,36 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+# Vercel Entry Point
 import os
 import sys
+import traceback
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-# 1. FIX PATHING FOR RECURSIVE IMPORTS
-# index.py is in api/
-# project_root is the parent of api/
+# Pathing setup
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
-backend_dir = os.path.join(project_root, "Backend")
-
-# Add root for 'from Backend.xxx'
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+if os.path.join(project_root, "Backend") not in sys.path:
+    sys.path.insert(0, os.path.join(project_root, "Backend"))
 
-# Add Backend root for 'from xxx' inside Backend
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
-# 2. BRIDGING TO BACKEND PACKAGE
 try:
     from Backend.main import app
-    
-    # Add a production diagnostic route directly to the main app if it loaded
-    @app.get("/api/infra-test")
-    def infra_test():
-        return {
-            "status": "ok", 
-            "version": "56.0-FINAL", 
-            "message": "Backend Is Live",
-            "project_root": project_root
-        }
-    
 except Exception as e:
-    import traceback
     error_trace = traceback.format_exc()
-    from fastapi import FastAPI
-    from fastapi.middleware.cors import CORSMiddleware
-    
-    app = FastAPI()
+    app = FastAPI(title="Error Recovery App")
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
     
-    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-    async def catch_all_error(path: str):
-        return {
-            "status": "critical_failure",
-            "message": "Backend import failed",
-            "error": str(e),
-            "trace": error_trace
-        }
+    @app.get("/api/infra-test")
+    def error_report():
+        return {"status": "error", "error": str(e), "trace": error_trace}
+    
+    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    def catch_all(path: str):
+        return {"detail": "Backend failed to load", "error": str(e)}
 
-from mangum import Mangum
-handler = Mangum(app)
+# Export handler for Netlify/AWS if needed
+try:
+    from mangum import Mangum
+    handler = Mangum(app)
+except ImportError:
+    pass

@@ -33,37 +33,33 @@ async def debug_path(request: Request):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://ibuuuuu.netlify.app",
-        "https://stellar-melba-eead27.netlify.app",
-        "http://localhost:3000",
-        "http://localhost:8000",
-        "http://localhost:5500",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-        "http://127.0.0.1:5500",
-        "https://full-stack-project-iota-five.vercel.app"
-    ],
-    allow_origin_regex=r"https://.*\.vercel\.app",  # Support for Vercel Branch/Preview deployments
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Relative imports from Backend namespace
+# Relative imports handled by index.py pathing
 from routers import users, bookings, providers, reviews, services, supports
 
-# Initialize Database Tables
+# Initialize Database on Startup
 from db.database import engine, Base
 import models.users, models.providers, models.services, models.bookings, models.reviews, models.supports
 
-try:
-    logger.info("Initializing database tables...")
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables initialized successfully.")
-except Exception as e:
-    logger.error(f"Error initializing database: {e}")
-    # Don't crash here, might be a transient connection issue
+@app.on_event("startup")
+def startup_event():
+    try:
+        logger.info("Initial check of database connection...")
+        # We don't necessarily want to create_all on every serverless hit, 
+        # but for this project it ensures the DB matches the schema
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database synchronized.")
+    except Exception as e:
+        logger.warning(f"Database sync skipped/failed: {e}")
+
+@app.get("/api/infra-test")
+def infra_test():
+    return {"status": "ok", "message": "Backend Is Live", "source": "Backend.main"}
 
 app.include_router(users.router)
 app.include_router(bookings.router)
