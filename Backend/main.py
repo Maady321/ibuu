@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import sys
@@ -8,7 +8,19 @@ backend_root = os.path.dirname(os.path.abspath(__file__))
 if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
-app = FastAPI(title="HomeBuddy", version="55.0-RECOVERY")
+app = FastAPI(
+    title="HomeBuddy", 
+    version="55.0-RECOVERY",
+    redirect_slashes=False  # Crucial for Vercel/Netlify to prevent POST -> GET 307 redirects
+)
+
+@app.api_route("/api/debug-path", methods=["GET", "POST"])
+async def debug_path(request: Request):
+    return {
+        "url": str(request.url),
+        "method": request.method,
+        "headers": dict(request.headers)
+    }
 
 app.add_middleware(
     CORSMiddleware,

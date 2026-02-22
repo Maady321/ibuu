@@ -16,46 +16,65 @@ router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(user: UserRegister, db: Session = Depends(get_db)):
-    logger.info(f"Registering user: {user.email}")
+    """
+    Register a new customer account.
+    """
+    logger.info(f"New registration attempt: {user.email}")
+    
     try:
+        # 1. Normalize and check for existing email
         normalized_email = user.email.lower().strip()
         if db.query(User).filter(User.email == normalized_email).first():
-            logger.warning(f"Email already exists: {normalized_email}")
-            raise HTTPException(status_code=400, detail="Email already registered")
-
-        if db.query(User).filter(User.phone == user.phone).first():
-            logger.warning(f"Phone already exists: {user.phone}")
+            logger.warning(f"Registration failed: Email {normalized_email} already exists")
             raise HTTPException(
-                status_code=400, detail="Phone number already registered"
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="This email is already registered. Please login instead."
             )
 
+        # 2. Check for existing phone
+        if db.query(User).filter(User.phone == user.phone).first():
+            logger.warning(f"Registration failed: Phone {user.phone} already exists")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="This phone number is already linked to an account."
+            )
+
+        # 3. Create User object (Role is anchored to 'user' for this endpoint)
         new_user = User(
-            name=user.name,
+            name=user.name.strip(),
             email=normalized_email,
             password=hash_password(user.password),
-            phone=user.phone,
-            address=user.address,
+            phone=user.phone.strip(),
+            address=user.address.strip(),
             role="user",
+            is_active=True
         )
 
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-        logger.info(f"User created successfully: {new_user.id}")
+        
+        logger.info(f"User registration success: ID {new_user.id}")
 
         return {
-            "message": "User registered successfully",
-            "user_id": new_user.id,
-            "name": new_user.name,
-            "email": new_user.email,
+            "status": "success",
+            "message": "Welcome to HomeBuddy! Your account has been created.",
+            "data": {
+                "user_id": new_user.id,
+                "name": new_user.name,
+                "email": new_user.email
+            }
         }
+
     except HTTPException:
         raise
     except Exception as e:
+        db.rollback()
+        logger.error(f"FATAL ERROR during registration: {str(e)}")
         traceback.print_exc()
-        logger.error(f"CRITICAL ERROR IN REGISTER: {str(e)}")
         raise HTTPException(
-            status_code=500, detail="Internal Server Error during registration"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="We encountered a problem setting up your account. Please try again later."
         )
 
 

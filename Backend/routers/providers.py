@@ -12,39 +12,68 @@ router = APIRouter(prefix="/api/providers", tags=["Providers"])
 
 @router.post("/create", response_model=ProviderResponse)
 def create_provider(provider: ProviderCreate, db: Session = Depends(get_db)):
+    """
+    Register a new service provider. Creates both a User record and a Provider profile.
+    """
+    logger.info(f"New provider registration attempt: {provider.email}")
     normalized_email = provider.email.lower().strip()
 
-    db_user = db.query(User).filter(User.email == normalized_email).first()
+    try:
+        # 1. Integrity Check: Check for existing User/Provider
+        existing_user = db.query(User).filter(User.email == normalized_email).first()
+        if existing_user:
+            # Check if this user is already a provider
+            existing_provider = db.query(Provider).filter(Provider.user_id == existing_user.id).first()
+            if existing_provider:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, 
+                    detail="An account with this email already exists as a provider."
+                )
+            # If they exist but as a different role, we update their role (multi-role support foundation)
+            existing_user.role = "provider"
+            db_user = existing_user
+        else:
+            # Create new base User
+            db_user = User(
+                name=provider.full_name.strip(),
+                email=normalized_email,
+                password=hash_password(provider.password),
+                phone=provider.phone.strip(),
+                address=provider.address.strip(),
+                role="provider",
+                is_active=True
+            )
+            db.add(db_user)
+            db.flush() # Get user ID before proceeding
 
-    if not db_user:
-        db_user = User(
-            name=provider.full_name,
-            email=normalized_email,
-            password=hash_password(provider.password),
-            phone=provider.phone,
-            address=provider.address,
-            role="provider",
+        # 2. Extract provider-specific data (everything except password/email which go to User)
+        p_data = provider.model_dump(exclude={"password"})
+        p_data["email"] = normalized_email
+
+        # 3. Create the Provider Profile linked to the User
+        new_provider = Provider(
+            user_id=db_user.id,
+            **p_data
         )
-        db.add(db_user)
-        db.flush()
-    else:
-        db_user.role = "provider"
 
-    existing_provider = db.query(Provider).filter(Provider.user_id == db_user.id).first()
-    if existing_provider:
-        raise HTTPException(status_code=400, detail="Provider already exists")
+        db.add(new_provider)
+        db.commit()
+        db.refresh(new_provider)
+        
+        logger.info(f"Provider registration success: ID {new_provider.id}")
+        return new_provider
 
-    provider_data = provider.model_dump()
-    provider_data["email"] = normalized_email
-    provider_data["password"] = hash_password(provider.password)
-
-    new_provider = Provider(user_id=db_user.id, **provider_data)
-
-    db.add(new_provider)
-    db.commit()
-    db.refresh(new_provider)
-
-    return new_provider
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"FATAL ERROR in provider registration: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create provider account. Please verify all fields are correct."
+        )
 
 
 
