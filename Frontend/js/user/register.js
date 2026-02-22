@@ -64,31 +64,45 @@ document
         }),
       });
 
-      const result = await response.json();
+      // ✅ Check if the server responded with an error (like 405 or 500) FIRST
+      if (!response.ok) {
+        // Read as text so we don't trigger the JSON crash if it's an HTML error page
+        const errorText = await response.text();
+        console.error(`Server Error ${response.status}:`, errorText);
 
-      if (response.ok) {
-        window.HB.showToast(
-          result.message || "Registration successful!",
-          "success",
-        );
+        let errorMsg = "Registration failed. Please try again.";
+        try {
+          // Try to parse the error text as JSON if the backend sent a structured error
+          const errorJson = JSON.parse(errorText);
+          errorMsg = errorJson.detail || errorMsg;
+        } catch (e) {
+          // If parsing fails, it's likely an HTML error or plain text
+        }
 
-        // Auto-login or redirect
-        setTimeout(() => {
-          window.location.href = "login.html?registered=true";
-        }, 2000);
-      } else {
-        // Handle specific backend errors
-        const errorMsg =
-          result.detail || "Registration failed. Please try again.";
         window.HB.showToast(errorMsg, "error");
 
-        // If the error is field-specific, try to highlight it
+        // Field specific highlights
         if (errorMsg.toLowerCase().includes("email")) {
           window.HB.showError("email", errorMsg);
         } else if (errorMsg.toLowerCase().includes("phone")) {
           window.HB.showError("phone", errorMsg);
         }
+
+        return; // Stop execution here since it failed
       }
+
+      // ✅ If we get here, response.ok is true, so it is safe to parse the JSON
+      const result = await response.json();
+
+      window.HB.showToast(
+        result.message || "Registration successful!",
+        "success",
+      );
+
+      // Auto-login or redirect
+      setTimeout(() => {
+        window.location.href = "login.html?registered=true";
+      }, 2000);
     } catch (error) {
       console.error("Registration Error:", error);
       window.HB.showToast(
