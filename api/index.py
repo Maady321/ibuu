@@ -37,11 +37,30 @@ except Exception as e:
     import traceback
     error_trace = traceback.format_exc()
     app = FastAPI()
+    
+    # Enable CORS even on the error app so we can see the trace in the browser
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
     @app.get("/api/infra-test")
     def infra_test():
         return {
             "status": "error", 
             "message": f"Backend failed to load: {str(e)}",
+            "trace": error_trace
+        }
+    
+    # Fallback for all API routes to show the error
+    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    async def catch_all_error(path: str):
+        return {
+            "status": "critical_failure",
+            "message": "The backend failed to initialize. See the 'trace' field for details.",
+            "error": str(e),
             "trace": error_trace
         }
 

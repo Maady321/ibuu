@@ -41,9 +41,13 @@ window.checkAuth = () => {
 };
 
 async function makeRequest(endpoint, options = {}) {
-  const url = `${API_BASE}${endpoint}`;
-  const token = window.getToken();
+  // Ensure endpoint starts with / and API_BASE doesn't end with / to avoid double slashes
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${API_BASE}${cleanEndpoint}`;
 
+  console.log(`[API Request] ${options.method || "GET"} ${url}`);
+
+  const token = window.getToken();
   const headers = {
     "Content-Type": "application/json",
     ...options.headers,
