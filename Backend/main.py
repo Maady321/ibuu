@@ -32,6 +32,7 @@ app.add_middleware(
         "http://127.0.0.1:8000",
         "https://full-stack-project-iota-five.vercel.app"
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Support for Vercel Branch/Preview deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
