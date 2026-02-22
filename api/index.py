@@ -45,9 +45,4 @@ except Exception as e:
             "trace": error_trace
         }
 
-# Mangum for Netlify
-try:
-    from mangum import Mangum
-    handler = Mangum(app)
-except:
-    pass
+# End of file

@@ -1,11 +1,9 @@
 fastapi
-uvicorn
 sqlalchemy
 python-dotenv
 python-multipart
 pyjwt
 requests
 pg8000
-passlib[bcrypt]
+passlib
 bcrypt
-mangum
