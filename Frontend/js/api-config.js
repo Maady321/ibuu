@@ -5,7 +5,7 @@ const API_BASE =
   window.location.hostname === "127.0.0.1"
     ? `http://${window.location.hostname}:8000`
     : window.location.hostname.includes("netlify.app")
-      ? window.location.origin // Use the same Netlify domain for Backend
+      ? "https://full-stack-project-iota-five.vercel.app" // Point to stable Vercel Backend
       : "https://full-stack-project-iota-five.vercel.app";
 
 window.setToken = (token, role = "user") => {
