@@ -39,6 +39,16 @@ def create_error_app(error_msg, trace):
 try:
     from Backend.main import app as backend_app
     app = backend_app
+    
+    # Diagnostic route to catch cases where Vercel might be stripping prefixes
+    # and sending the request to the index root instead of the full path.
+    @app.api_route("/", methods=["GET", "POST", "OPTIONS"])
+    async def root_diagnostic():
+        return {
+            "message": "HomeBuddy API Root",
+            "info": "If you see this on a POST request, Vercel might be stripping your path prefixes.",
+            "version": "55.0-RECOVERY"
+        }
 except Exception as e:
     app = create_error_app(str(e), traceback.format_exc())
 

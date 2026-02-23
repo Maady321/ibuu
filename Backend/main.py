@@ -15,9 +15,9 @@ if backend_root not in sys.path:
 
 app = FastAPI(
     title="HomeBuddy", 
-    version="55.0-RECOVERY",
-    redirect_slashes=False  # Crucial for Vercel/Netlify to prevent POST -> GET 307 redirects
+    version="55.0-RECOVERY"
 )
+app.router.redirect_slashes = False # Crucial for Vercel/Netlify to prevent POST -> GET 307 redirects
 
 @app.get("/")
 def read_root():
